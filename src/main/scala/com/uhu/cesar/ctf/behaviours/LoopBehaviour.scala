@@ -9,8 +9,20 @@ class LoopBehaviour[A <: Agent, S, AA](agent: A,
                                        behaviours: List[FBehaviour[A, S, AA]]
                                       ) extends Behaviour(agent) {
 
+  var state: S = _
+  var agentAction: AA = _
+
+  override def onStart(): Unit = {
+    state = initialData
+    agentAction = initialAction
+  }
+
   override def action() = {
-    behaviours.foldLeft((initialData, initialAction)) { case ((data, a), b) => b.action(data, a) }
+    val (newState, newAgentAction) = behaviours.foldLeft((state, agentAction)) {
+      case ((data, a), b) => b.action(data, a)
+    }
+    state = newState
+    agentAction = newAgentAction
   }
 
   override def done(): Boolean = false

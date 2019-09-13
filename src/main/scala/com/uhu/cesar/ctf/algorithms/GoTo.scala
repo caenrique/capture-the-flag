@@ -1,45 +1,49 @@
 package com.uhu.cesar.ctf.algorithms
 
-import com.uhu.cesar.ctf.domain.AgentAction
+import com.uhu.cesar.ctf.domain.{AgentAction, CTFGameData}
 import com.uhu.cesar.ctf.domain.AgentAction.{Adelante, Atras, Nula, Rotar}
 
 object GoTo {
 
   case class Point(x: Int, y: Int)
-  case class State(prev: Option[State], action: AgentAction, height: Int, value: Double, coords: Point, heading: Int)
+  case class State(prev: Option[State], actions: List[AgentAction], height: Int, value: Double, coords: Point, heading: Int)
 
-  def apply(from: (Point, Int), to: Point): List[AgentAction] = {
+  def apply(data: CTFGameData)(from: (Point, Int), to: Point): List[AgentAction] = {
 
+    println(s"from: $from to: $to")
     def heuristic(p: Point): Double = Math.sqrt(Math.pow(to.x-p.x, 2) + Math.pow(to.y-p.y, 2)) // Distancia euclidea
 
-    def move(s: State, a: AgentAction, coords: Point): State = {
-      State(Some(s), a, s.height + 1, heuristic(coords) + s.height + 1, coords, s.heading)
-    }
-
-    def rotate(s: State, da: Int): State = {
-      State(Some(s), Rotar(da), s.height + 1, s.value + 1, s.coords, s.heading + da)
-    }
-
     def neighbors(s: State): Set[State] = {
-      val rotations = (0 until 360 by 45)
-      val movements = List((1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1))
 
-      val rotationChilds = rotations.drop(1).map(h => rotate(s, h)).toSet // Girar
+      def move(s: State, a: AgentAction, coords: Point): State = {
+        State(Some(s), List(a), s.height + 1, heuristic(coords) + s.height + 1, coords, s.heading)
+      }
 
-      rotationChilds ++ rotations.zip(movements).toMap.get(s.heading).map{ case (dx, dy) =>
-        Set(
-          move(s, Adelante, Point(s.coords.x + dx, s.coords.y + dy)),
-          move(s, Atras, Point(s.coords.x - dx, s.coords.y - dy))
-        )
-      }.getOrElse(Set.empty)
+      def rotate(s: State, da: Int, coords: Point): State = {
+        State(Some(s), List(Rotar(da), Adelante), s.height + 2, heuristic(coords) + s.height + 2, coords, (s.heading + da) % 360)
+      }
+
+      val movements = List(
+        (0, -1, 0), (1, -1, 45), (1, 0, 90), (1, 1, 135), (0, 1, 180), (-1, 1, 225), (-1, 0, 270), (-1, -1, 315)
+      ).toSet
+
+      movements
+        .map{ case (dx, dy, da) => (Point(s.coords.x + dx, s.coords.y + dy), (360 - s.heading + da) % 360) }
+        .filter{ case (p, _) => data.isFree(p) }
+        .map {
+          case (p, 0) => move(s, Adelante, p)
+          case (p, 180) => move(s, Atras, p)
+          case (p, da) => rotate(s, da, p)
+      }
     }
 
     def buildPath(s: State): List[AgentAction] = {
-      def innerBuild(s: State): List[AgentAction] = s.prev match {
-        case Some(prevS) => s.action :: innerBuild(prevS)
-        case None => Nil
+      @scala.annotation.tailrec
+      def innerBuild(s: State, actions: List[AgentAction]): List[AgentAction] = s.prev match {
+        case Some(prevS) => innerBuild(prevS, s.actions ++ actions)
+        case None => actions
       }
-      innerBuild(s).reverse
+      innerBuild(s, Nil)
     }
 
     @scala.annotation.tailrec
@@ -49,16 +53,23 @@ object GoTo {
         val current = acc.minBy(_.value)
         if (current.coords == target) buildPath(current)
         else {
-          val children = neighbors(current).filterNot(s => visited.exists(ss => ss.coords == s.coords && ss.value < s.value))
-          search(acc ++ children, visited + current, target)
+          val inVisited = (s: State) => visited.exists(ss => ss.coords == s.coords && ss.value <= s.value)
+          val inAcc = (s: State) => acc.exists(ss => ss.coords == s.coords && ss.value <= s.value)
+          val children = neighbors(current).filterNot(s => inVisited(s) || inAcc(s))
+          search((acc - current) ++ children, visited + current, target)
         }
       }
     }
 
     val point = Point(from._1.x, from._1.y)
-    val start = State(None, Nula, 0, heuristic(point), point, from._2)
+    val start = State(None, Nil, 0, heuristic(point), point, from._2)
 
-    search(Set(start), Set.empty[State], to)
+    val startTime = System.currentTimeMillis()
+    val path = search(Set(start), Set.empty[State], to)
+    println(s"${System.currentTimeMillis() - startTime} ms")
+    println(data.me)
+    println(path)
+    path
   }
 
 }
