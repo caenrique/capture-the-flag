@@ -1,6 +1,6 @@
 package com.uhu.cesar.ctf.algorithms
 
-import com.uhu.cesar.ctf.domain.{AgentAction, CTFGameData}
+import com.uhu.cesar.ctf.domain.{AgentAction, CTFState}
 import com.uhu.cesar.ctf.domain.AgentAction.{Adelante, Atras, Nula, Rotar}
 
 object GoTo {
@@ -8,7 +8,7 @@ object GoTo {
   case class Point(x: Int, y: Int)
   case class State(prev: Option[State], actions: List[AgentAction], height: Int, value: Double, coords: Point, heading: Int)
 
-  def apply(data: CTFGameData)(from: (Point, Int), to: Point): List[AgentAction] = {
+  def apply(data: CTFState)(from: (Point, Int), to: Point): List[AgentAction] = {
 
     println(s"from: $from to: $to")
     def heuristic(p: Point): Double = Math.sqrt(Math.pow(to.x-p.x, 2) + Math.pow(to.y-p.y, 2)) // Distancia euclidea

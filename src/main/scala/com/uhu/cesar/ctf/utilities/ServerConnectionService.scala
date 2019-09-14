@@ -1,6 +1,6 @@
 package com.uhu.cesar.ctf.utilities
 
-import com.uhu.cesar.ctf.agents.HelloAgent
+import com.uhu.cesar.ctf.agents.PlayerAgent
 import jade.core.AID
 import jade.domain.DFService
 import jade.domain.FIPAAgentManagement.{DFAgentDescription, ServiceDescription}
@@ -8,7 +8,7 @@ import jade.domain.FIPANames.InteractionProtocol
 import jade.lang.acl.ACLMessage
 import jade.proto.SimpleAchieveREInitiator
 
-trait ServerConnectionService { agent: HelloAgent =>
+trait ServerConnectionService { agent: PlayerAgent =>
 
   def connectToServerMessage(team: Int, password: String, teamName: String): ACLMessage = {
     val request = new ACLMessage(ACLMessage.REQUEST)

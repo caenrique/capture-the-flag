@@ -1,9 +1,7 @@
 package com.uhu.cesar.ctf.domain
 
-import com.uhu.cesar.ctf.domain
 import com.uhu.cesar.ctf.domain.CTFObject.CTFObject
 import com.uhu.cesar.ctf.domain.map.Team
-import com.uhu.cesar.ctf.domain.map.Team.Team
 
 case class ServerMessageLine(obj: CTFObject, team: Team, x: Int, y: Int, heading: Int)
 
@@ -11,7 +9,13 @@ object ServerMessageLine {
 
   def parse(messageLine: String): Option[ServerMessageLine] = {
     def buildLine(obj: String, team: String, x: String, y: String, heading: String): Option[ServerMessageLine] = {
-      CTFObject.valueOf(obj).map(o => ServerMessageLine(o, Team(team.toInt), x.toInt, y.toInt, heading.toInt))
+      for {
+        lobject <- CTFObject.valueOf(obj)
+        tTeam <- team.toIntOption.flatMap(Team(_))
+        xInt <- x.toIntOption
+        yInt <- y.toIntOption
+        hInt <- heading.toIntOption
+      } yield ServerMessageLine(lobject, tTeam, xInt, yInt, hInt)
     }
 
     messageLine.split(",").toList match {

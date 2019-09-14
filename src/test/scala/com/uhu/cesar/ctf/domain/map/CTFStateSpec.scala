@@ -5,12 +5,12 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.io.Source
 import scala.util.Using
 
-class CTFGameDataSpec extends FlatSpec with Matchers {
+class CTFStateSpec extends FlatSpec with Matchers {
 
   def loadMap(filename: String): Option[CTFMap] = {
     Using(Source.fromFile(filename, "UTF-8")) {
       reader => reader.getLines().toList
-    }.map(ls => CTFMap(ls, ls.size, ls.head.length)).toOption
+    }.map(ls => CTFMap(ls, ls.size, ls.head.length, Nil, Nil, Nil)).toOption
   }
 
   "A group of players" should "be trackeable where they came from" in {
