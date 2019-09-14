@@ -10,4 +10,4 @@ project/plugins/project/
 .lib/
 *.class
 *.log
-ctf/
+ctf-server/
