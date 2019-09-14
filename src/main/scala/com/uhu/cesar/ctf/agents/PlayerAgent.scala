@@ -67,13 +67,16 @@ class PlayerAgent extends Agent with DFRegister with ServerConnectionService wit
   def takeTheFlag: BehaviourFunction[PlayerAgent, CTFState, AgentAction] = { agent => (data, aa) =>
 
     val from = (Point(data.me.x, data.me.y), data.me.heading)
-    val enemyFlag = data.map.flags.find(_.team == data.me.team).get // Asumimos de momento que la bandera se puede ver
+    val enemyFlag = data.map.flags.find(_.team != data.me.team).get // Asumimos de momento que la bandera se puede ver
     val nextAction :: newActions = if (data.computePath) {
       GoTo(data)(from, Point(enemyFlag.x, enemyFlag.y))
     } else if (data.actionList.nonEmpty) {
       data.actionList
     } else {
-      Nula :: Nil
+      if(enemyFlag.x == data.me.x && enemyFlag.y == data.me.y) {
+        val myBase = data.map.bases.find(_.team == data.me.team).get
+        GoTo(data)(from, Point(myBase.x, myBase.y))
+      } else Nula :: Nil
     }
 
     if (data.me == data.lastPosition && aa != Nula) {
