@@ -10,7 +10,7 @@ class CTFStateSpec extends FlatSpec with Matchers {
   def loadMap(filename: String): Option[CTFMap] = {
     Using(Source.fromFile(filename, "UTF-8")) {
       reader => reader.getLines().toList
-    }.map(ls => CTFMap(ls, ls.size, ls.head.length, Nil, Nil, Nil)).toOption
+    }.map(ls => CTFMap(ls, ls.size, ls.head.length, Set.empty, Set.empty, Set.empty)).toOption
   }
 
   "A group of players" should "be trackeable where they came from" in {

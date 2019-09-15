@@ -2,7 +2,7 @@ package com.uhu.cesar.ctf.domain
 
 import scala.util.Random
 
-sealed trait AgentAction
+sealed trait AgentAction extends Product with Serializable
 
 object AgentAction {
 

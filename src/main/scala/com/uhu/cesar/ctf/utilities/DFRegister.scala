@@ -8,15 +8,11 @@ import scala.util.Try
 
 trait DFRegister { agent: Agent =>
 
-  def registerService(servicetype: String, servicename: String): Try[DFAgentDescription] = {
+  def registerService(serviceDescription: ServiceDescription): Try[DFAgentDescription] = {
     val dfDescription = new DFAgentDescription
     dfDescription.setName(agent.getAID)
 
-    val sd = new ServiceDescription
-    sd.setType(servicetype)
-    sd.setName(servicename)
-
-    dfDescription.addServices(sd)
+    dfDescription.addServices(serviceDescription)
 
     Try(DFService.register(agent, dfDescription))
   }

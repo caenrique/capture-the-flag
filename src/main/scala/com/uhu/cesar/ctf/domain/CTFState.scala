@@ -4,14 +4,14 @@ import com.uhu.cesar.ctf.algorithms.GoTo.Point
 import com.uhu.cesar.ctf.domain.CTFObject._
 import com.uhu.cesar.ctf.domain.ServerMessage.{ServerMessage, filterMessage}
 import com.uhu.cesar.ctf.domain.map._
-import jade.lang.acl.ACLMessage
+import io.circe.generic.semiauto._
+import io.circe.{Decoder, Encoder}
 import monocle.macros.GenLens
 
 case class CTFState(map: CTFMap,
                     me: Player,
                     lastPosition: Player,
                     config: CTFConfig,
-                    lastMessage: Option[ACLMessage],
                     actionList: List[AgentAction],
                     computePath: Boolean)
 
@@ -23,6 +23,9 @@ object CTFState {
   val flags = map composeLens CTFMap.flags
   val walls = map composeLens CTFMap.walls
   val bases = map composeLens CTFMap.bases
+
+  //implicit val ctfStateDecoder: Decoder[CTFState] = deriveDecoder
+  //implicit val ctfStateEncoder: Encoder[CTFState] = deriveEncoder
 
   def parse(myTeam: Int, message: String): Option[CTFState] = {
     val init :: lines = message.split("\n").toList
@@ -41,7 +44,7 @@ object CTFState {
       config <- configOption
       me <- playerOption
       map <- mapOption
-    } yield CTFState(map, me, me, config, None, Nil, computePath = true)
+    } yield CTFState(map, me, me, config, Nil, computePath = true)
   }
 
   implicit class CTFGameDataOps(gameData: CTFState) {
@@ -57,10 +60,10 @@ object CTFState {
 
       // No echamos cuenta de las muertes
 
-      val players = filterMessage(message, JUGADOR)
-      val flags = filterMessage(message, BANDERA)
-      val bases = filterMessage(message, BASE)
-      val me = filterMessage(message, YO)
+      val players = filterMessage(message, JUGADOR).toSet
+      val flags = filterMessage(message, BANDERA).toSet
+      val bases = filterMessage(message, BASE).toSet
+      val me = filterMessage(message, YO).toSet
 
       val updatedData = CTFState.players.set(players.flatMap(Player.parse))
         .andThen(CTFState.flags.set(flags.flatMap(Flag.parse)))

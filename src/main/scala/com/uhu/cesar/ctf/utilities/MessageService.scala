@@ -1,10 +1,17 @@
 package com.uhu.cesar.ctf.utilities
 
+import com.uhu.cesar.ctf.agents.BoardAgent
+import com.uhu.cesar.ctf.domain.Board
+import com.uhu.cesar.ctf.domain.map.CTFMap
+import io.circe.Decoder
 import jade.core.{AID, Agent}
 import jade.domain.DFService
 import jade.domain.FIPAAgentManagement.{DFAgentDescription, ServiceDescription}
 import jade.domain.FIPANames.InteractionProtocol
-import jade.lang.acl.ACLMessage
+import jade.lang.acl.{ACLMessage, MessageTemplate}
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
 
 trait MessageService { agent: Agent =>
 
@@ -22,10 +29,19 @@ trait MessageService { agent: Agent =>
     request.setSender(getAID)
     request.setContent(content)
     request.setProtocol(InteractionProtocol.FIPA_REQUEST)
+    request.setConversationId(Board.password)
 
     send(request)
 
     dest
+  }
+
+  def receiveJsonResponse[A](from: AID)(implicit ev: Decoder[A]): Either[Error, A] = {
+    val message: ACLMessage = agent.blockingReceive(MessageTemplate.MatchConversationId(Board.password))
+    message.getPerformative match {
+      case ACLMessage.INFORM => decode[A](message.getContent).left.map(e => new Error(e.getMessage))
+      case ACLMessage.FAILURE => Left(new Error(message.getContent))
+    }
   }
 
 
