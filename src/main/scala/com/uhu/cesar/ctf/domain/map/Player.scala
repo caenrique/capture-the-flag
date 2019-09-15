@@ -7,6 +7,8 @@ case class Player(x: Int, y: Int, heading: Int, team: Team)
 
 object Player {
 
+  def rotate(from: Int, to: Int): Int = (360 - from + to) % 360
+
   def parse: ServerMessageLine => Option[Player] = {
     case ServerMessageLine(JUGADOR, team, x, y, heading) => Some(Player(x, y, heading, team))
     case ServerMessageLine(YO, team, x, y, heading) => Some(Player(x, y, heading, team))

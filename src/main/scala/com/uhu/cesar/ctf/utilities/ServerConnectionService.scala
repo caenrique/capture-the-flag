@@ -10,8 +10,6 @@ import jade.proto.SimpleAchieveREInitiator
 
 trait ServerConnectionService { agent: PlayerAgent =>
 
-  var lastMessage: ACLMessage = _
-
   def connectToServerMessage(team: Int, password: String, teamName: String): ACLMessage = {
     val request = new ACLMessage(ACLMessage.REQUEST)
     request.addReceiver(serverAID)
@@ -26,7 +24,7 @@ trait ServerConnectionService { agent: PlayerAgent =>
     new SimpleAchieveREInitiator(agent, message) {
       override def handleInform(msg: ACLMessage): Unit = informHandler("inform", msg)
 
-      override def handleRefuse(msg: ACLMessage): Unit = informHandler("refuse", msg)
+      override def handleRefuse(msg: ACLMessage): Unit = reset(message)
 
       override def handleFailure(msg: ACLMessage): Unit = informHandler("failure", msg)
 

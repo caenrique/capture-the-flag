@@ -2,9 +2,9 @@ package com.uhu.cesar.ctf.agents
 
 import com.uhu.cesar.ctf.behaviours.LoopBehaviour
 import com.uhu.cesar.ctf.behaviours.LoopBehaviour.BehaviourFunction
-import com.uhu.cesar.ctf.domain.Board
-import com.uhu.cesar.ctf.domain.Board.{Response, State}
+import com.uhu.cesar.ctf.domain.Board.{BroadcastResponse, Response, SingleResponse, State}
 import com.uhu.cesar.ctf.domain.map.CTFMap
+import com.uhu.cesar.ctf.domain.{Board, TeamState}
 import com.uhu.cesar.ctf.utilities.DFRegister
 import io.circe.generic.auto._
 import io.circe.parser._
@@ -23,41 +23,52 @@ class BoardAgent extends Agent with DFRegister {
       new LoopBehaviour(
         this,
         Board.emptyState,
-        Response(getAID, None),
+        SingleResponse(getAID, None),
         behaviours.map(LoopBehaviour.createChildBehaviour[BoardAgent, State, Response](this))
       )
     )
 
   }
 
-  def receiveMessage: BehaviourFunction[BoardAgent, State, Response] = { agent => (data, _) =>
+  def receiveMessage: BehaviourFunction[BoardAgent, State, Response] = { agent =>
+    (data, _) =>
 
-      val message: ACLMessage = agent.blockingReceive(MessageTemplate.MatchConversationId(Board.password))
+      val template = MessageTemplate.or(
+        MessageTemplate.MatchConversationId(Board.password),
+        MessageTemplate.MatchConversationId(Board.teamComunication)
+      )
+      val message: ACLMessage = agent.blockingReceive(template)
       val sender = message.getSender
-      val stateOrError = decode[CTFMap](message.getContent)
 
       def currentData(default: (Long, CTFMap)) = data.getOrElse(sender, default)
 
       message.getPerformative match {
         case ACLMessage.INFORM =>
-          stateOrError match {
+          decode[CTFMap](message.getContent) match {
             case Right(newData) =>
               val timed = (System.currentTimeMillis(), newData)
               val updated = data + (sender -> CTFMap.update(currentData(timed), timed))
-              (updated, Response(message.getSender, None))
+              (updated, SingleResponse(message.getSender, None))
             case Left(err) =>
-              (data, Response(sender, Some(new Error("BoardAgent: " + err.getMessage))))
+              (data, SingleResponse(sender, Some(new Error("BoardAgent: " + err.getMessage))))
           }
-        case _ => (data, Response(sender, Some(new Error("BoardAgent: Performative not supported"))))
+        case ACLMessage.PROPAGATE =>
+          decode[TeamState](message.getContent) match {
+            case Right(newState) =>
+              (data, BroadcastResponse(newState))
+            case Left(err) =>
+              (data, SingleResponse(sender, Some(new Error("BoardAgent: " + err.getMessage))))
+          }
+        case _ => (data, SingleResponse(sender, Some(new Error("BoardAgent: Performative not supported"))))
       }
   }
 
   def sendResponse: BehaviourFunction[BoardAgent, State, Response] = { agent =>
     (data, aa) =>
 
-      def createMessage(perf: Int, to: AID, from: AID, content: String, password: String): ACLMessage = {
+      def createMessage(perf: Int, to: List[AID], from: AID, content: String, password: String): ACLMessage = {
         val msg = new ACLMessage(perf)
-        msg.addReceiver(to)
+        to.foreach(msg.addReceiver)
         msg.setSender(from)
         msg.setContent(content)
         msg.setConversationId(password)
@@ -65,10 +76,12 @@ class BoardAgent extends Agent with DFRegister {
       }
 
       val message = aa match {
-        case Response(to, Some(err)) => createMessage(ACLMessage.FAILURE, to, getAID, err.getMessage, Board.password)
-        case Response(to, None) =>
+        case SingleResponse(to, Some(err)) => createMessage(ACLMessage.FAILURE, List(to), getAID, err.getMessage, Board.password)
+        case SingleResponse(to, None) =>
           val aggregatedData: CTFMap = data.toList.map(_._2._2).reduce((m1, m2) => m1.merge(m2))
-          createMessage(ACLMessage.INFORM, to, getAID, aggregatedData.asJson.noSpaces, Board.password)
+          createMessage(ACLMessage.INFORM, List(to), getAID, aggregatedData.asJson.noSpaces, Board.password)
+        case BroadcastResponse(newState) =>
+          createMessage(ACLMessage.INFORM, data.keys.toList, getAID, newState.asJson.noSpaces, Board.teamComunication)
       }
 
       agent.send(message)

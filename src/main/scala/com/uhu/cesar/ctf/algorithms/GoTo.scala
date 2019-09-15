@@ -1,7 +1,8 @@
 package com.uhu.cesar.ctf.algorithms
 
+import com.uhu.cesar.ctf.domain.AgentAction.{Adelante, Atras, Rotar}
+import com.uhu.cesar.ctf.domain.map.{CTFMap, Player}
 import com.uhu.cesar.ctf.domain.{AgentAction, CTFState}
-import com.uhu.cesar.ctf.domain.AgentAction.{Adelante, Atras, Nula, Rotar}
 
 object GoTo {
 
@@ -23,12 +24,8 @@ object GoTo {
         State(Some(s), List(Rotar(da), Adelante), s.height + 2, heuristic(coords) + s.height + 2, coords, (s.heading + da) % 360)
       }
 
-      val movements = List(
-        (0, -1, 0), (1, -1, 45), (1, 0, 90), (1, 1, 135), (0, 1, 180), (-1, 1, 225), (-1, 0, 270), (-1, -1, 315)
-      ).toSet
-
-      movements
-        .map{ case (dx, dy, da) => (Point(s.coords.x + dx, s.coords.y + dy), (360 - s.heading + da) % 360) }
+      CTFMap.movements
+        .map{ case (dx, dy, da) => (Point(s.coords.x + dx, s.coords.y + dy), Player.rotate(s.heading, da)) }
         .filter{ case (p, _) => data.isFree(p) }
         .map {
           case (p, 0) => move(s, Adelante, p)

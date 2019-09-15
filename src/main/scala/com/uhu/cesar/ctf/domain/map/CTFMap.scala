@@ -1,6 +1,8 @@
 package com.uhu.cesar.ctf.domain.map
 
 import com.uhu.cesar.ctf.algorithms.GoTo.Point
+import com.uhu.cesar.ctf.domain.AgentAction
+import com.uhu.cesar.ctf.domain.AgentAction.{Adelante, Atras, Rotar}
 import com.uhu.cesar.ctf.domain.CTFObject._
 import com.uhu.cesar.ctf.domain.ServerMessage.ServerMessage
 import monocle.macros.GenLens
@@ -38,6 +40,10 @@ case class CTFMap(walls: List[String],
 
 object CTFMap {
 
+  val movements = List(
+    (0, -1, 0), (1, -1, 45), (1, 0, 90), (1, 1, 135), (0, 1, 180), (-1, 1, 225), (-1, 0, 270), (-1, -1, 315)
+  ).toSet
+
   def update(data1: (Long, CTFMap), data2: (Long, CTFMap)): (Long, CTFMap) = {
     if (data1._1 < data2._1) data2._1 -> data1._2.update(data2._2)
     else data2._1 -> data2._2.update(data1._2)
@@ -64,6 +70,21 @@ object CTFMap {
       w <- width.toIntOption
       h <- height.toIntOption
     } yield CTFMap(mapString.grouped(w).toList, w, h, players, flags, bases)
+  }
+
+  def nextPosition(position: Point, heading: Int, action: AgentAction): (Point, Int) = {
+    action match {
+      case Adelante =>
+        movements.find(_._3 == heading).map {
+          case (dx, dy, _) => (Point(position.x + dx, position.y + dy), heading)
+        }.get
+      case Atras =>
+        movements.find(_._3 == heading).map {
+          case (dx, dy, _) => (Point(position.x - dx, position.y - dy), heading)
+        }.get
+      case Rotar(angulo) =>
+        (position, (heading + angulo) % 360)
+    }
   }
 
 }

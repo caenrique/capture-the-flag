@@ -9,7 +9,10 @@ object Board {
   type State = Map[AID, (Long, CTFMap)]
   val OK = "OK"
   val emptyState = Map.empty[AID, (Long, CTFMap)]
+
   val password: String = "12345"
+  val teamComunication: String = "forAllTheTeam"
+
   val name: String = "BoardAgent"
 
   val service: ServiceDescription = {
@@ -19,5 +22,7 @@ object Board {
     sd
   }
 
-  case class Response(to: AID, content: Option[Error])
+  sealed trait Response extends Product with Serializable
+  case class SingleResponse(to: AID, content: Option[Error]) extends Response
+  case class BroadcastResponse(content: TeamState) extends Response
 }
