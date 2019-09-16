@@ -14,9 +14,4 @@ object AgentAction {
     require(angulo % 45 == 0, "El ángulo de la rotación tiene que ser múltiplo de 45")
     override def toString: String = s"Rotar $angulo"
   }
-
-  def randomAction: AgentAction = {
-    if (Random.nextInt(3) == 0) Rotar(Random.nextInt(8) * 45)
-    else Random.shuffle(List(Adelante, Atras)).head
-  }
 }

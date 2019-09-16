@@ -41,6 +41,10 @@ object CTFState {
         val p = Player.parseFromString(x, y, heading, myTeam)
         val m = CTFMap.parse(mapString, width, height, lines.flatMap(ServerMessageLine.parse))
         (p, m)
+      case width :: height :: x :: y :: heading :: _ :: xMin :: xMax :: yMin :: yMax :: mapString :: Nil =>
+        val p = Player.parseFromString(x, y, heading, myTeam)
+        val m = CTFMap.parsePartial(mapString, xMin, xMax, yMin, yMax, width, height, lines.flatMap(ServerMessageLine.parse))
+        (p, m)
       case _ => (None, None)
     }
 
@@ -59,6 +63,10 @@ object CTFState {
 
       if (insideMap(p)) notAWall(p) else false
     }
+
+    def updateMap(newMap: CTFMap): CTFState = gameData.copy(map = newMap)
+
+    def updatePlayer(player: Player): CTFState = gameData.copy(me = player)
 
     def update(message: ServerMessage): CTFState = {
 

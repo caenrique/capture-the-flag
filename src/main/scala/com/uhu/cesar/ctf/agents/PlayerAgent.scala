@@ -11,6 +11,8 @@ import com.uhu.cesar.ctf.utilities.ServerConnectionService
 import jade.core.Agent
 import jade.lang.acl.ACLMessage
 
+import scala.util.Random
+
 class PlayerAgent extends Agent with ServerConnectionService with PlayerBehaviours {
 
   val myTeam = 0
@@ -50,7 +52,7 @@ class PlayerAgent extends Agent with ServerConnectionService with PlayerBehaviou
           }
         case WithTheFlag =>
           if (meWithFlag) goToBase(agent)(data, aa)
-          else explore(agent)(data, aa)
+          else explore(agent)(data, aa) // TODO: Implementar perseguir a un enemigo
       }
   }
 

@@ -24,7 +24,8 @@ trait ExploreFBehaviour {
         if (data.isFree(Point(data.me.x + dx, data.me.y + dy))) Adelante
         else {
           println("Nueva direccion aleatoria")
-          Random.shuffle(CTFMap.movements.filter(isFree).map(toAction)).headOption.getOrElse(aa)
+
+          Random.shuffle(CTFMap.movements.filter(isFree).map(toAction).toList).headOption.getOrElse(aa)
         }
       }.getOrElse(aa)
 

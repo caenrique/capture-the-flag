@@ -1,6 +1,7 @@
 package com.uhu.cesar.ctf.domain
 
 import com.uhu.cesar.ctf.domain.CTFObject.CTFObject
+import com.uhu.cesar.ctf.domain.map.{CTFMap, Player}
 
 object ServerMessage {
 
@@ -15,6 +16,7 @@ object ServerMessage {
       .map(l => if (l.split(",").length < 5) s"$l,0" else l) // ALGUNAS LINEAS VIENEN CON 3 ENTEROS Y OTRAS CON 4 !!!!
       .map(ServerMessageLine.parse).toList.flatten
   }
+
 
   def filterMessage(msg: ServerMessage, obj: CTFObject): List[ServerMessageLine] = msg.filter(_.obj == obj)
 

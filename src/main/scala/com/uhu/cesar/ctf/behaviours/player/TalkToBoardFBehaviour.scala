@@ -29,6 +29,7 @@ trait TalkToBoardFBehaviour extends MessageService {
 
       val map = response.getOrElse(data.map)
       val updated = CTFState.map.set(map)
+      println(map)
 
       (updated(newData), aa)
   }
