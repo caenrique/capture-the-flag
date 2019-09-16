@@ -1,0 +1,1 @@
+java -jar "$1" -gui -container -agents "CesarBoard:com.uhu.cesar.ctf.agents.BoardAgent($2);cesar0:com.uhu.cesar.ctf.agents.PlayerAgent($2);cesar1:com.uhu.cesar.ctf.agents.PlayerAgent($2);cesar2:com.uhu.cesar.ctf.agents.PlayerAgent($2);cesar3:com.uhu.cesar.ctf.agents.PlayerAgent($2)"
