@@ -15,9 +15,9 @@ object Board {
 
   val name: String = "BoardAgent"
 
-  val service: ServiceDescription = {
+  val service: Int => ServiceDescription = { team =>
     val sd = new ServiceDescription()
-    sd.setName(name)
+    sd.setName(name + team)
     sd.setType("Board")
     sd
   }

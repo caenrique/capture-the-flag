@@ -1,9 +1,9 @@
 package com.uhu.cesar.ctf.domain
 
-import com.uhu.cesar.ctf.algorithms.GoTo.Point
 import com.uhu.cesar.ctf.domain.CTFObject._
 import com.uhu.cesar.ctf.domain.ServerMessage.{ServerMessage, filterMessage}
 import com.uhu.cesar.ctf.domain.TeamState.Attacking
+import com.uhu.cesar.ctf.domain.map.CTFMap.Point
 import com.uhu.cesar.ctf.domain.map._
 import jade.core.AID
 import monocle.macros.GenLens
@@ -17,10 +17,14 @@ case class CTFState(map: CTFMap,
                     teamState: TeamState,
                     board: Option[AID],
                     server: AID,
-                    shouldBeHere: Option[(Point, Int)])
+                    shouldBeHere: Option[(Point, Int)],
+                    target: Option[Player],
+                    exploring: Boolean,
+                    reactive: Boolean)
 
 object CTFState {
 
+  val actionList = GenLens[CTFState](_.actionList)
   val map = GenLens[CTFState](_.map)
   val me = GenLens[CTFState](_.me)
   val players = map composeLens CTFMap.players
@@ -31,7 +35,6 @@ object CTFState {
   val board = GenLens[CTFState](_.board)
 
   def parse(myTeam: Int, server: AID, message: String): Option[CTFState] = {
-    println(message)
     val init :: lines = message.split("\n").toList
     val valuesList = init.split(",").toList
 
@@ -52,7 +55,7 @@ object CTFState {
       config <- configOption
       me <- playerOption
       map <- mapOption
-    } yield CTFState(map, me, me, config, Nil, computePath = true, Attacking, None, server, None)
+    } yield CTFState(map, me, me, config, Nil, computePath = true, Attacking, None, server, None, None, true, false)
   }
 
   implicit class CTFGameDataOps(gameData: CTFState) {

@@ -15,7 +15,8 @@ import jade.lang.acl.{ACLMessage, MessageTemplate}
 class BoardAgent extends Agent with DFRegister {
 
   override def setup(): Unit = {
-    registerService(Board.service)
+    var team = getArguments.headOption.flatMap(_.asInstanceOf[String].toIntOption).getOrElse(0)
+    registerService(Board.service(team))
 
     val behaviours = List(receiveMessage, sendResponse)
 
@@ -79,7 +80,6 @@ class BoardAgent extends Agent with DFRegister {
         case SingleResponse(to, Some(err)) => createMessage(ACLMessage.FAILURE, List(to), getAID, err.getMessage, Board.password)
         case SingleResponse(to, None) =>
           val aggregatedData: CTFMap = data.toList.map(_._2._2).reduce((m1, m2) => m1.merge(m2))
-          println("aggregated: " + aggregatedData)
           createMessage(ACLMessage.INFORM, List(to), getAID, aggregatedData.asJson.noSpaces, Board.password)
         case BroadcastResponse(newState) =>
           createMessage(ACLMessage.INFORM, data.keys.toList, getAID, newState.asJson.noSpaces, Board.teamComunication)

@@ -1,6 +1,6 @@
 package com.uhu.cesar.ctf.domain.map
 
-import com.uhu.cesar.ctf.algorithms.GoTo.Point
+import com.uhu.cesar.ctf.domain.map.CTFMap.Point
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
@@ -33,9 +33,9 @@ class CTFMapSpec extends FlatSpec with Matchers {
   }
 
   "a map" should "maintain the observed parts instead of fog" in {
-    val walls1 = List("-----","-   -","-   -","-   -","-----")
-    val walls2 = List("###--","#  --","#  --","-----","-----")
-    val walls3 = List("###--","#   -","#   -","-   -","-----")
+    val walls1 = List("-----", "-   -", "-   -", "-   -", "-----")
+    val walls2 = List("###--", "#  --", "#  --", "-----", "-----")
+    val walls3 = List("###--", "#   -", "#   -", "-   -", "-----")
     val merged = CTFMap.mergeWalls(walls1, walls2)
 
     merged shouldEqual walls3

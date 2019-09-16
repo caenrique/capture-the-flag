@@ -11,7 +11,6 @@ trait ReceiveMessagesFBehaviour {
   def receiveMessages: PlayerBehaviour = { agent =>
     (data, aa) =>
       val message = agent.blockingReceive(MessageTemplate.MatchSender(data.server))
-      println("next messages: " + message.getContent)
 
       val newData = if (data.config.partialVision) {
         val firstLine :: rest = message.getContent.split("\n").toList
@@ -29,7 +28,7 @@ trait ReceiveMessagesFBehaviour {
           case _ => None
         }).getOrElse(data)
       } else {
-        data.update(ServerMessage.parse(message.getContent))
+        data.update(ServerMessage.parse(agent.team, message.getContent))
       }
 
       agent.lastMessage = message

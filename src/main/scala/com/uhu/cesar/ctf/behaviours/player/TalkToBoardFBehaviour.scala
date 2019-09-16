@@ -16,7 +16,7 @@ trait TalkToBoardFBehaviour extends MessageService {
         sendMessage(agent, data.board.get, data.map.asJson.noSpaces, ACLMessage.INFORM)
         data
       } else {
-        val who = sendMessage(agent, Board.service, data.map.asJson.noSpaces, ACLMessage.INFORM)
+        val who = sendMessage(agent, Board.service(agent.team), data.map.asJson.noSpaces, ACLMessage.INFORM)
         data.copy(board = Some(who))
       }
 
@@ -29,7 +29,6 @@ trait TalkToBoardFBehaviour extends MessageService {
 
       val map = response.getOrElse(data.map)
       val updated = CTFState.map.set(map)
-      println(map)
 
       (updated(newData), aa)
   }

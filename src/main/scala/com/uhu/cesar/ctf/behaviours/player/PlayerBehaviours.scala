@@ -8,13 +8,18 @@ trait PlayerBehaviours extends ReceiveMessagesFBehaviour
   with TalkToBoardFBehaviour
   with ListenToTeamFBehaviour
   with TakeTheFlagFBehaviour
+  with TakeMyFlagFBehaviour
   with GoToBaseFBehaviour
   with TakeDownEnemyFBehaviour
   with ExploreFBehaviour
   with SendActionFBehaviour
   with ChangeTeamStateFBehaviour
   with CheckPositionFBehaviour
+  with DodgePlayerFBehaviour
 
 object PlayerBehaviours {
-  type PlayerBehaviour = BehaviourFunction[PlayerAgent, CTFState, AgentAction]
+  type agent = PlayerAgent
+  type state = CTFState
+  type action = AgentAction
+  type PlayerBehaviour = BehaviourFunction[agent, state, action]
 }

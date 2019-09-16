@@ -21,6 +21,7 @@ object ServerMessageLine {
     messageLine.split(",").toList match {
       case objStr :: team :: x :: y :: Nil => buildLine(objStr, team, x, y, "0")
       case objStr :: team :: x :: y :: heading :: Nil => buildLine(objStr, team, x, y, heading)
+      case _ => None
     }
   }
 
